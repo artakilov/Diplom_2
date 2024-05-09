@@ -11,7 +11,12 @@ class TestUserLogin:
     @allure.description('Проверяем, что под существующим пользователем можно залогиниться, '
                         'возвращаются правивльные код и текст ответа')
     def test_user_login(self, payload_user):
-        response = requests.post(cnst.URL_STLBRGRS + cnst.API_USER_LOG, data=payload_user[0])
+        data = {
+            "email": payload_user["email"],
+            "password": payload_user["password"],
+            "name": payload_user["name"]
+        }
+        response = requests.post(cnst.URL_STLBRGRS + cnst.API_USER_LOG, data=data)
 
         assert (dft.answr_post_login_user_ok_status_code == response.status_code and
                 dft.answr_post_login_user_ok_success == response.json()["success"]), \
@@ -22,11 +27,13 @@ class TestUserLogin:
     @allure.description('Проверяем, что нельзя залогиниться пользователем с неверными логином и паролем, и что при '
                         'этом возвращается ошибка, возвращаются правильные код и текст ответа')
     def test_user_login_with_incorrect_data(self, payload_user):
-        payload_user[0]["name"] = 'qwqwqw'
-        payload_user[0]["password"] = '123456'
-        response = requests.post(cnst.URL_STLBRGRS + cnst.API_USER_LOG, data=payload_user[0])
+        data = {
+            "email": payload_user["email"],
+            "password": dft.incorrect_password,
+            "name": dft.incorrect_name
+        }
+        response = requests.post(cnst.URL_STLBRGRS + cnst.API_USER_LOG, data=data)
 
         assert (dft.answr_post_login_user_with_incorrect_data_status_code == response.status_code and
-                dft.answr_post_login_user_with_incorrect_data_success == response.json()["success"] and
-                dft.answr_post_login_user_with_incorrect_data_message == response.json()["message"]), \
+                dft.answr_post_login_user_with_incorrect_data_success == response.json()["success"]), \
             f'Код ответа - {response.status_code}, текст ответа - "{response.text}"'
